@@ -9,6 +9,7 @@ import {
 } from "@/lib/genlayer";
 import {
   isAcceptedWithReturn,
+  isIssueCapabilityConfirmation,
   submittedFailureLabel,
 } from "@/lib/runtime";
 import type {
@@ -259,8 +260,21 @@ export async function confirmExpectedContractState(
     if (functionName === "expire_use_request" && stateOf(request) !== "EXPIRED") {
       throw new Error(`State confirmation failed: expected EXPIRED, read ${stateOf(request)}.`);
     }
-    if (functionName === "issue_capability" && (stateOf(request) !== "AUTHORIZED" || !request.capability_id)) {
-      throw new Error(`State confirmation failed: expected an authorized request with a capability, read ${stateOf(request)}.`);
+    if (functionName === "issue_capability") {
+      const capabilityId = request.capability_id;
+      if (typeof capabilityId !== "string" || capabilityId.trim() === "") {
+        throw new Error("State confirmation failed: issue_capability returned an empty capability ID.");
+      }
+      const capability = await getCapability(capabilityId);
+      const capabilityState = capability.effective_status === "CAPABILITY_ISSUED"
+        ? capability.effective_status
+        : capability.stored_status;
+      if (!isIssueCapabilityConfirmation(functionName, capabilityId, capabilityState)) {
+        throw new Error(
+          `State confirmation failed: issue_capability requires CAPABILITY_ISSUED, read ${capabilityState || "unknown"}.`,
+        );
+      }
+      return "CAPABILITY_ISSUED";
     }
     return stateOf(request);
   }

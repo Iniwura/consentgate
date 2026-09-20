@@ -41,6 +41,15 @@ export function capabilityCanConsume(status) {
   return status === "CAPABILITY_ISSUED";
 }
 
+export function isIssueCapabilityConfirmation(method, capabilityId, state) {
+  return (
+    method === "issue_capability" &&
+    typeof capabilityId === "string" &&
+    capabilityId.trim() !== "" &&
+    state === "CAPABILITY_ISSUED"
+  );
+}
+
 export function isFinishedWithReturn(successful, executionResultName) {
   return successful === true && executionResultName === "FINISHED_WITH_RETURN";
 }

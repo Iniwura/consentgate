@@ -9,6 +9,7 @@ import {
   canonicalUtcSecond,
   isAcceptedWithReturn,
   isFinishedWithReturn,
+  isIssueCapabilityConfirmation,
   productStateLabel,
   shouldResubmitAfterHash,
   submittedFailureLabel,
@@ -38,6 +39,13 @@ test("v2 evidence binds the manifest and entry to v2", () => {
 test("consumed capabilities cannot be consumed again", () => {
   assert.equal(capabilityCanConsume("CAPABILITY_ISSUED"), true);
   assert.equal(capabilityCanConsume("CAPABILITY_CONSUMED"), false);
+});
+
+test("issue_capability post-write confirmation requires issued capability state", () => {
+  assert.equal(isIssueCapabilityConfirmation("issue_capability", "cap_test", "CAPABILITY_ISSUED"), true);
+  assert.equal(isIssueCapabilityConfirmation("issue_capability", "", "CAPABILITY_ISSUED"), false);
+  assert.equal(isIssueCapabilityConfirmation("issue_capability", "cap_test", "AUTHORIZED"), false);
+  assert.equal(isIssueCapabilityConfirmation("issue_capability", "cap_test", "CAPABILITY_CONSUMED"), false);
 });
 
 test("wallet account and chain changes produce the correct UI state", () => {
