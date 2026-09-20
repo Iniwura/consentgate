@@ -3,6 +3,7 @@ export function shortHash(value: string, head = 10, tail = 8) {
   if (value.length <= head + tail + 1) return value;
   return `${value.slice(0, head)}…${value.slice(-tail)}`;
 }
+
 export function shortAddress(value: string) {
   return shortHash(value, 6, 4);
 }
@@ -25,3 +26,4 @@ export function humanizeDimension(value: string) {
     .map((part) => part[0]?.toUpperCase() + part.slice(1))
     .join(" ");
 }
+

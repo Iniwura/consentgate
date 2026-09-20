@@ -66,3 +66,4 @@ export async function verifyRemoteEvidence(
 export function evidenceEntryCount(evidenceSet: EvidenceSetRecord | null) {
   return evidenceSet?.manifest.entries.length ?? 0;
 }
+

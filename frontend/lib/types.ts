@@ -151,13 +151,21 @@ export type WalletConnection = {
 
 export type Eip1193Provider = {
   request(args: { method: string; params?: unknown[] }): Promise<unknown>;
+  on?: (event: string, listener: (...args: unknown[]) => void) => unknown;
+  removeListener?: (
+    event: string,
+    listener: (...args: unknown[]) => void,
+  ) => unknown;
 };
 
 export type WritePhase =
   | "idle"
   | "simulating"
   | "awaiting-wallet"
-  | "finalizing"
+  | "submitted"
+  | "consensus"
+  | "accepted"
+  | "confirming-state"
   | "complete"
   | "failed";
 
@@ -166,4 +174,5 @@ export type WriteProgress = {
   label: string;
   txHash?: string;
   error?: string;
+  statusName?: string;
 };

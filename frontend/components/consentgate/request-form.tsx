@@ -108,7 +108,7 @@ export function RequestForm({
           </div>
           {error ? <p className="mt-4 text-xs text-red-300">{error}</p> : null}
           <div className="mt-5 flex flex-wrap items-center gap-3">
-            <button type="submit" disabled={!wallet || wrongNetwork || isSubmitting || progress?.phase === "finalizing"} className="terminal-button terminal-button-primary disabled:cursor-not-allowed disabled:opacity-40"><Send className="size-3.5" /> {isSubmitting ? "Preparing…" : "Simulate & create request"}</button>
+            <button type="submit" disabled={!wallet || wrongNetwork || isSubmitting || progress?.phase === "consensus" || progress?.phase === "confirming-state"} className="terminal-button terminal-button-primary disabled:cursor-not-allowed disabled:opacity-40"><Send className="size-3.5" /> {isSubmitting ? "Preparing…" : "Simulate & create request"}</button>
             <p className="text-[10px] text-stone-600">Simulation runs before the paid GenLayer write.</p>
           </div>
         </form>

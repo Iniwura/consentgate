@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 
 import { TransactionBanner } from "@/components/consentgate/transaction-banner";
 import { studioDevConfig } from "@/lib/config";
-import { connectWallet, getBrowserProvider, getLiveSnapshot, readWalletConnection, submitWrite, switchToStudioDev } from "@/lib/contract";
+import { connectWallet, getBrowserProvider, getLiveSnapshot, readWalletConnection, submitWrite, switchToStudioDev, WriteTransactionError } from "@/lib/contract";
 import { verifyRemoteEvidence } from "@/lib/evidence";
 import type { LiveSnapshot, WalletConnection, WriteProgress } from "@/lib/types";
 import { DecisionSection } from "@/components/site/decision";
@@ -99,7 +99,7 @@ export function LiveSite() {
   async function runWrite(functionName: string, args: (string | boolean)[]) {
     if (!wallet || wrongNetwork) throw new Error("Connect a wallet on Studio Dev before submitting a write.");
     setActionError(null);
-    try { await submitWrite(functionName, args, wallet, setProgress); await refresh(); } catch (error) { const message = error instanceof Error ? error.message : String(error); setActionError(message); setProgress({ phase: "failed", label: "Transaction did not complete", error: message }); throw error; }
+    try { await submitWrite(functionName, args, wallet, setProgress); await refresh(); } catch (error) { const message = error instanceof Error ? error.message : String(error); const transactionHash = error instanceof WriteTransactionError ? error.transactionHash : undefined; setActionError(message); setProgress({ phase: "failed", label: transactionHash ? "TRANSACTION SUBMITTED — CHECK STATUS" : "TRANSACTION DID NOT COMPLETE", txHash: transactionHash, error: message }); throw error; }
   }
 
   const visibleRemoteCheck = snapshot?.evidenceSet ? (remoteChecking ? undefined : remoteCheck) : undefined;

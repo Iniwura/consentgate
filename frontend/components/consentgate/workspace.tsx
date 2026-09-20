@@ -30,6 +30,7 @@ import {
   readWalletConnection,
   submitWrite,
   switchToStudioDev,
+  WriteTransactionError,
 } from "@/lib/contract";
 import { contractMethods } from "@/lib/contract";
 import { verifyRemoteEvidence } from "@/lib/evidence";
@@ -114,7 +115,8 @@ function WorkspaceShell() {
       await evidenceQuery.refetch();
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
-      setProgress({ phase: "failed", label: "Transaction did not complete", error: message });
+      const transactionHash = error instanceof WriteTransactionError ? error.transactionHash : undefined;
+      setProgress({ phase: "failed", label: transactionHash ? "TRANSACTION SUBMITTED — CHECK STATUS" : "TRANSACTION DID NOT COMPLETE", txHash: transactionHash, error: message });
       setActionError(message);
       throw error;
     }

@@ -1,6 +1,6 @@
 # ConsentGate
 
-ConsentGate is a GenLayer Intelligent Contract for fail-closed, evidence-bound authorization of a data-use request. It turns a natural-language policy plus a specific request into an auditable lifecycle: freeze, independently verify evidence, reach exact semantic consensus, issue a bounded capability, and consume it once.
+ConsentGate proves that a specific use of data has permission behind it before access is released. It turns consent into a verifiable, single-use access decision: REQUEST USE → PROVE CONSENT → CHECK PERMISSION → CREATE ACCESS PASS → USE ACCESS.
 
 ## Problem
 
@@ -50,7 +50,7 @@ The contract does not trust requesters, policy owners' mutable inputs after regi
 The project pins the host verification tools in [`requirements.txt`](requirements.txt) and [`pyproject.toml`](pyproject.toml). The contract's exact GenVM dependency header is:
 
 ```text
-# { "Depends": "py-genlayer:5jycge4q8k23462jtb0b9fyey1s9qz928sz2nbrd9mg4sxqg2qng" }
+# { "Depends": "py-genlayer:5jycgeq4k8j23462jtb0b9fyey1s9qz928sz2nbrd9mg4sxqg2qng" }
 ```
 
 After installing the pinned requirements in the project environment, run:
@@ -75,36 +75,37 @@ the local contract byte-for-byte and exposes 17 public methods. The previous
 deployment `0xC867A1E2374E133eb62448b22BcFB0E481cf9055` is historical only and
 is marked `SUPERSEDED AFTER LIVE REVIEW DIAGNOSIS`.
 
-The corrected Studio Dev happy path has been validated end-to-end: policy
-registration, request creation, evidence freeze, semantic review, capability
-issuance, and single-use capability consumption all completed with the final
-request and capability states read back from Studio Dev. Local test reports and
-fixtures remain outside the published source tree because they can contain
-deployment-specific runtime material.
+The corrected Studio Dev happy path is recorded in
+[`artifacts/STUDIO_DEV_FINAL_TEST_REPORT.md`](artifacts/STUDIO_DEV_FINAL_TEST_REPORT.md)
+and [`artifacts/STUDIO_DEV_HAPPY_PATH_FIXTURE.json`](artifacts/STUDIO_DEV_HAPPY_PATH_FIXTURE.json):
+policy registration, request creation, evidence freeze, semantic review,
+capability issuance, and single-use capability consumption all completed with
+the final request and capability states read back from Studio Dev.
 
-## Frontend
+## Frontend application
 
-The production ConsentGate app lives in [`frontend`](frontend) and is deployed
-at [consentgate.vercel.app](https://consentgate.vercel.app). The public landing
-page leads into a route-based workspace with dedicated views for new requests,
-request authorization dossiers, policy records, and the authoritative Studio
-Dev live proof.
+The live application is [consentgate.vercel.app](https://consentgate.vercel.app).
+The source lives in [`frontend`](frontend) and is a working ConsentGate product
+surface, not a simulated dashboard. It connects a Studio Dev wallet, reads
+latest-nonfinal contract state, and exposes the real lifecycle through a
+permission record:
 
-The workspace reads policy, request, evidence-set, and capability records from
-the deployed contract. It verifies published evidence bytes against their
-on-chain hashes and keeps live values distinct from unsaved local form input.
-Wallet writes use the existing GenLayer client and wait for a finalized
-`ACCEPTED` / `FINISHED_WITH_RETURN` result before refreshing the record. The
-interactive lifecycle covers policy registration and inspection, use-request
-creation, consent evidence freeze and repair, semantic review, capability
-issuance, capability consumption with a presentation nonce, and capability or
-policy revocation where the contract permits it.
+1. `REQUEST USE` records WHO IS ASKING, WHAT DATA, WHY, WHO RECEIVES IT, HOW
+   LONG, sharing, and commercial use.
+2. `PROVE CONSENT` attaches and locks the consent proof and attestation.
+3. `CHECK PERMISSION` reads the deployed review result and all nine rule
+   dimensions: policy match, consent validity, purpose, data category,
+   recipient, retention, sharing, commercial use, and proof validity.
+4. `CREATE ACCESS PASS` is available only for an onchain `AUTHORIZED` request.
+5. `USE ACCESS` consumes the exact pass once with its presentation nonce.
 
-The tested Studio Dev authorization path uses policy
-`cgfinal20260919201751c31ce658b75a` and request
-`cghappy20260919201751c31ce658b75a` on the authoritative contract. Its final
-readback reaches `CAPABILITY_CONSUMED`; the record binds the request,
-policy, evidence-set, and authorization-result fingerprints throughout.
+The interface presents friendly labels such as `ACCESS APPROVED` while keeping
+the canonical contract state and protocol identifiers available under protocol
+details. Writes use the installed `genlayer-js@2.0.0-rc.1` integration with
+estimate → simulate → wallet approval → one submission → accepted-consensus
+receipt → `FINISHED_WITH_RETURN` → latest-nonfinal state confirmation. A
+submitted hash is retained so the user can check status without creating a
+duplicate write.
 
 For local use:
 
@@ -121,13 +122,21 @@ Production/demo configuration can override them with
 `NEXT_PUBLIC_CONTRACT_ADDRESS`, `NEXT_PUBLIC_DEMO_POLICY_ID`, and
 `NEXT_PUBLIC_DEMO_REQUEST_ID`.
 
-Known limitations: browser wallet availability is required for writes, evidence
-URLs must remain publicly reachable for review, and negative lifecycle branches
-are covered by contract source/tests in addition to the interactive state
-gates. The app does not replace the contract as the source of truth.
+Known limitations: browser wallet availability is required for writes, public
+evidence URLs must remain reachable for permission review, and the UI does not
+invent chain state when a read or transaction is pending.
 
-Submission checks: the frontend passes TypeScript strict checking, ESLint, and
-the production build under Node `22.20.0`; no frontend test script or test
-files are currently configured. Contract verification remains the 67-test
-preflight recorded above. The Vercel/Nitro production build also passes with
-`VERCEL=1 NITRO_PRESET=vercel npx vite build`.
+Submission checks: the frontend includes focused runtime tests for the
+transaction watcher, lifecycle gates, evidence version binding, wallet state,
+capability single-use behavior, and product-state presentation. The contract
+verification remains the 67-test preflight recorded above. Run the frontend
+checks with:
+
+```text
+cd frontend
+npm test
+npm run lint
+npm run build
+rm -rf .output .vercel/output
+VERCEL=1 NITRO_PRESET=vercel npx vite build
+```
