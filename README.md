@@ -50,7 +50,7 @@ The contract does not trust requesters, policy owners' mutable inputs after regi
 The project pins the host verification tools in [`requirements.txt`](requirements.txt) and [`pyproject.toml`](pyproject.toml). The contract's exact GenVM dependency header is:
 
 ```text
-# { "Depends": "py-genlayer:5jycgeq4k8j23462jtb0b9fyey1s9qz928sz2nbrd9mg4sxqg2qng" }
+# { "Depends": "py-genlayer:5jycge4q8k23462jtb0b9fyey1s9qz928sz2nbrd9mg4sxqg2qng" }
 ```
 
 After installing the pinned requirements in the project environment, run:
